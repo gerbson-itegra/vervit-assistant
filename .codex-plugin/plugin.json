@@ -1,0 +1,34 @@
+{
+  "name": "vervit-assistant",
+  "version": "0.1.0+codex.20260609195840",
+  "description": "Jira-driven development, adaptive Superpowers/TDD, deterministic Jira operations, multi-provider routing, and guarded SemVer releases.",
+  "author": {
+    "name": "Vervit"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Vervit Assistant",
+    "shortDescription": "Develop Jira tasks with guarded releases.",
+    "longDescription": "Vervit Assistant orchestrates Jira task selection, adaptive PRDs, Superpowers/TDD implementation, manual validation checklists, deterministic Jira REST operations, multi-provider routing for trivial text work, hotfixes, planned releases, SemVer, tags, regression gates, and traceable project memory.",
+    "developerName": "Vervit",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Project Onboarding",
+      "Spec Driven",
+      "Jira",
+      "Release Management"
+    ],
+    "defaultPrompt": [
+      "/init Vervit neste projeto",
+      "Use o Vervit Assistant para listar minhas atividades Jira",
+      "Inicie um hotfix Vervit",
+      "Prepare a proxima release Vervit",
+      "Mapeie este codebase com o padrao Vervit",
+      "Especifique esta tarefa Jira Vervit",
+      "Use TLC neste projeto para mapear o codebase"
+    ],
+    "brandColor": "#0F766E"
+  }
+}
