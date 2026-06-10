@@ -6,9 +6,11 @@ from pathlib import Path
 
 try:
     from scripts.init_project import initialize_project
+    from scripts.migrate_project import migrate_project
 except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from scripts.init_project import initialize_project
+    from scripts.init_project import initialize_project  # type: ignore[import-untyped]
+    from scripts.migrate_project import migrate_project  # type: ignore[import-untyped]
 
 
 def init_project(
@@ -18,9 +20,15 @@ def init_project(
     install_skills: bool = False,
 ) -> None:
     root = target.resolve() if target else Path.cwd()
-    results = initialize_project(
+
+    result: dict[str, object] = {"target": str(root)}
+
+    result["migration"] = migrate_project(root, dry_run=False)
+
+    result["files"] = initialize_project(
         root,
         force=force,
         install_skills=install_skills,
     )
-    print(json.dumps({"target": str(root), "files": results}, ensure_ascii=False, indent=2))
+
+    print(json.dumps(result, ensure_ascii=False, indent=2))

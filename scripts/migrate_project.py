@@ -87,41 +87,41 @@ def migrate_project(root: Path, *, dry_run: bool = False) -> dict[str, Any]:
             except Exception as e:
                 result["errors"].append(f"{description}: {e}")
 
-    # 1. AGENTS.md root → vervit-assistant/AGENTS.md
+    # 1. AGENTS.md root -> vervit-assistant/AGENTS.md
     old_agents = root / OLD_ROOT_AGENTS
     new_agents = root / NEW_VERVIT / "AGENTS.md"
     if old_agents.exists():
-        plan("AGENTS.md → vervit-assistant/AGENTS.md", lambda: _copy_file(old_agents, new_agents))
+        plan("AGENTS.md -> vervit-assistant/AGENTS.md", lambda: _copy_file(old_agents, new_agents))
 
-    # 2. .agents/main-agent.md → vervit-assistant/agent-profile.md
+    # 2. .agents/main-agent.md -> vervit-assistant/agent-profile.md
     old_profile = root / OLD_AGENTS / "main-agent.md"
     new_profile = root / NEW_VERVIT / "agent-profile.md"
     if old_profile.exists():
-        plan("agent profile → vervit-assistant/agent-profile.md", lambda: _copy_file(old_profile, new_profile))
+        plan("agent profile -> vervit-assistant/agent-profile.md", lambda: _copy_file(old_profile, new_profile))
 
-    # 3. .agents/vervit-assistant.json → vervit-assistant/config.json
+    # 3. .agents/vervit-assistant.json -> vervit-assistant/config.json
     old_config = root / OLD_AGENTS / "vervit-assistant.json"
     new_config = root / NEW_VERVIT / "config.json"
     if old_config.exists():
-        plan("config → vervit-assistant/config.json", lambda: _copy_file(old_config, new_config))
+        plan("config -> vervit-assistant/config.json", lambda: _copy_file(old_config, new_config))
 
-    # 4. .agents/vervit-onboarding.json → vervit-assistant/state.json
+    # 4. .agents/vervit-onboarding.json -> vervit-assistant/state.json
     old_state = root / OLD_AGENTS / "vervit-onboarding.json"
     new_state = root / NEW_VERVIT / "state.json"
     if old_state.exists():
-        plan("onboarding state → vervit-assistant/state.json", lambda: _copy_file(old_state, new_state))
+        plan("onboarding state -> vervit-assistant/state.json", lambda: _copy_file(old_state, new_state))
 
-    # 5. .specs/codebase/* → docs/_codebase/
+    # 5. .specs/codebase/* -> docs/_codebase/
     old_codebase = root / OLD_SPECS / "codebase"
     new_codebase = root / NEW_CODEBASE
     if old_codebase.exists():
         for file in sorted(old_codebase.iterdir()):
             if file.is_file():
                 dst = new_codebase / file.name
-                plan(f"{file.relative_to(root)} → {dst.relative_to(root)}",
+                plan(f"{file.relative_to(root)} -> {dst.relative_to(root)}",
                      lambda src=file, d=dst: _move_file(src, d))
 
-    # 6. .specs/jira/<KEY>/ → docs/<KEY>_*.md/json (flat)
+    # 6. .specs/jira/<KEY>/ -> docs/<KEY>_*.md/json (flat)
     old_jira = root / OLD_SPECS / "jira"
     if old_jira.exists():
         for task_dir in sorted(old_jira.iterdir()):
@@ -134,7 +134,7 @@ def migrate_project(root: Path, *, dry_run: bool = False) -> dict[str, Any]:
                 src = task_dir / old_name
                 dst = root / NEW_DOCS / f"{key}{suffix}"
                 if src.exists():
-                    plan(f"{src.relative_to(root)} → {dst.relative_to(root)}",
+                    plan(f"{src.relative_to(root)} -> {dst.relative_to(root)}",
                          lambda s=src, d=dst: _move_file(s, d))
 
     # 7. Create docs/README.md

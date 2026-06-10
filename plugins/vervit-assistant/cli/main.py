@@ -6,13 +6,15 @@ from pathlib import Path
 
 
 def main(argv: list[str] | None = None) -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(prog="vervit", description="Vervit Assistant CLI")
     sub = parser.add_subparsers(dest="command", required=True)
 
     init_p = sub.add_parser("init", help="Inicializar projeto com padrao Vervit")
     init_p.add_argument("--target", default=".", help="Raiz do projeto")
     init_p.add_argument("--force", action="store_true", help="Sobrescrever arquivos existentes")
-    init_p.add_argument("--install-skills", action="store_true", help="Instalar skills localmente")
+    init_p.add_argument("--no-install-skills", action="store_true", help="Pular instalacao de skills")
 
     jira_p = sub.add_parser("jira", help="Operacoes Jira")
     jira_sub = jira_p.add_subparsers(dest="jira_command", required=True)
@@ -60,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "init":
         from .init_cmd import init_project as _init
-        _init(target=Path(args.target), force=args.force, install_skills=args.install_skills)
+        _init(target=Path(args.target), force=args.force, install_skills=not args.no_install_skills)
         return 0
 
     if args.command == "jira":
