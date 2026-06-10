@@ -80,17 +80,17 @@ export function install({ source = DEFAULT_SOURCE, ref = DEFAULT_REF } = {}) {
     runCodex(addArguments);
   }
 
-  console.log(`Instalando '${PLUGIN}@${MARKETPLACE}'...`);
-  runCodex(["plugin", "add", `${PLUGIN}@${MARKETPLACE}`]);
-  console.log("Vervit Assistant instalado. Abra uma nova thread no Codex para usa-lo.");
+  console.log(`Marketplace '${MARKETPLACE}' configurado. Abra o Codex, va em Plugins e instale '${PLUGIN}' quando desejar.`);
 }
 
 function printHelp() {
-  console.log(`Instala o Vervit Assistant a partir do marketplace GitHub privado.
+  console.log(`Registra o marketplace privado Vervit no Codex.
 
 Uso:
   npx github:gerbson-itegra/vervit-assistant
   vervit-assistant-install [--source <repo-ou-caminho>] [--ref <git-ref>]
+
+Apos registrar, abra o Codex, va em Plugins e instale 'vervit-assistant' manualmente.
 
 Requisitos:
   - Node.js 18+

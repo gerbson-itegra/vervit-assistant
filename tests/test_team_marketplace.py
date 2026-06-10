@@ -54,7 +54,8 @@ class TeamMarketplaceTests(unittest.TestCase):
         )
         self.assertIn("gerbson-itegra/vervit-assistant", installer)
         self.assertIn('"plugin", "marketplace", "add"', installer)
-        self.assertIn('"plugin", "add"', installer)
+        self.assertNotIn('"plugin", "add"', installer)
+        self.assertIn("Abra o Codex", installer)
 
     def test_marketplace_package_is_current(self):
         subprocess.run(
