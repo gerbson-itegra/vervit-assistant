@@ -1,0 +1,41 @@
+name: Sync Marketplace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".codex-plugin/**"
+      - "skills/**"
+      - "scripts/**"
+      - "cli/**"
+      - "assets/**"
+      - "pyproject.toml"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build plugin artifact
+        run: python scripts/build_marketplace_plugin.py
+
+      - uses: actions/checkout@v4
+        with:
+          repository: gerbson-itegra/vervit-marketplace
+          token: ${{ secrets.MARKETPLACE_PAT }}
+          path: marketplace
+
+      - name: Sync plugin
+        run: |
+          rm -rf marketplace/plugins/vervit-assistant
+          cp -r plugins/vervit-assistant marketplace/plugins/vervit-assistant
+
+      - name: Commit and push
+        run: |
+          cd marketplace
+          git config user.name "gerbson-itegra"
+          git config user.email "gerbson-itegra@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "sync vervit-assistant from main repo"
+          git push
