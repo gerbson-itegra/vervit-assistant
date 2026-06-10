@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "vervit-assistant"
+version = "0.1.0"
+description = "Vervit Assistant — CLI e plugin para gerenciamento de projetos com Jira"
+requires-python = ">=3.10"
+
+[project.scripts]
+vervit = "cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["cli*"]

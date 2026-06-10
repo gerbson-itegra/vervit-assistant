@@ -15,13 +15,13 @@ Apresente ações: configurar/listar Jira, mapear projeto, iniciar tarefa ou pre
 
 1. Leia instruções locais apenas se afetarem a ação.
 2. Rode `python C:\Vervit\vervit-assistant\scripts\init_project.py --target <projeto>`.
-3. Revise saídas e `.agents/vervit-onboarding.json`.
+3. Revise saídas e `vervit-assistant/state.json`.
 4. Verifique Rovo se exposto; Jira ausente não bloqueia.
-5. Use `--install-skills` após autorização. Reinicie o Codex após instalar/atualizar skills.
+5. Use `--install-skills` para instalar skills localmente em `vervit-assistant/skills/` com symlinks em `.codex/skills/`.
 
 ## Regras
 
-- Não sobrescreva `AGENTS.md` ou `.agents/main-agent.md`; preserve trabalho local.
+- Não sobrescreva `vervit-assistant/AGENTS.md` ou `vervit-assistant/agent-profile.md`; preserve trabalho local.
 - Não faça commit, push, deploy ou migração.
 - Superpowers é padrão; TLC, somente quando pedido.
 - Nunca imprima credenciais Jira.

@@ -205,7 +205,7 @@ class InitProjectTests(unittest.TestCase):
             self.assertEqual(result["superpowers"]["reason"], "dirty_checkout")
             self.assertTrue((checkout / "local.txt").exists())
 
-    def test_creates_vervit_workflow_configuration_and_release_memory(self):
+    def test_creates_vervit_workflow_configuration_and_codebase(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
 
@@ -225,15 +225,13 @@ class InitProjectTests(unittest.TestCase):
                 skill_search_roots=[skills],
             )
 
-            config_path = root / ".agents" / "vervit-assistant.json"
-            release_path = root / ".specs" / "releases" / "NEXT" / "RELEASE.md"
-            onboarding_path = root / ".agents" / "vervit-onboarding.json"
+            config_path = root / "vervit-assistant" / "config.json"
+            onboarding_path = root / "vervit-assistant" / "state.json"
             env_example_path = root / ".env.vervit.example"
             gitignore_path = root / ".gitignore"
-            integrations_path = root / ".specs" / "codebase" / "INTEGRATIONS.md"
-            self.assertEqual(results[".agents/vervit-assistant.json"], "written")
+            integrations_path = root / "docs" / "_codebase" / "INTEGRATIONS.md"
+            self.assertEqual(results["vervit-assistant/config.json"], "written")
             self.assertTrue(config_path.exists())
-            self.assertTrue(release_path.exists())
             self.assertTrue(env_example_path.exists())
             self.assertFalse((root / ".env.vervit.local").exists())
             env_example = env_example_path.read_text(encoding="utf-8")
@@ -274,7 +272,7 @@ class InitProjectTests(unittest.TestCase):
 
             initialize_project(root, env={})
 
-            onboarding_text = (root / ".agents" / "vervit-onboarding.json").read_text(
+            onboarding_text = (root / "vervit-assistant" / "state.json").read_text(
                 encoding="utf-8"
             )
             onboarding = json.loads(onboarding_text)
@@ -313,7 +311,7 @@ class InitProjectTests(unittest.TestCase):
             )
 
             onboarding = json.loads(
-                (target / ".agents" / "vervit-onboarding.json").read_text(
+                (target / "vervit-assistant" / "state.json").read_text(
                     encoding="utf-8"
                 )
             )

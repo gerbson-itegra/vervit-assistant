@@ -33,7 +33,10 @@ DEFAULT_SKILL_SOURCES = {
 
 
 def read_template(relative_path: str) -> str:
-    return (TEMPLATE_ROOT / relative_path).read_text(encoding="utf-8")
+    path = TEMPLATE_ROOT / relative_path
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8")
 
 
 def safe_write(path: Path, content: str, *, force: bool = False) -> str:
@@ -58,14 +61,21 @@ def ensure_gitignore_entry(path: Path, entry: str) -> str:
     return "written"
 
 
-def default_skill_search_roots(env: Mapping[str, str] | None = None) -> list[Path]:
+def default_skill_search_roots(
+    env: Mapping[str, str] | None = None,
+    *,
+    project_skills_root: Path | None = None,
+) -> list[Path]:
     env = os.environ if env is None else env
     codex_home = Path(env["CODEX_HOME"]) if env.get("CODEX_HOME") else Path.home() / ".codex"
-    return [
+    roots: list[Path] = [
         codex_home / "skills",
         codex_home / "plugins" / "cache",
         PLUGIN_ROOT / "skills",
     ]
+    if project_skills_root is not None:
+        roots.insert(0, project_skills_root)
+    return roots
 
 
 def find_skill_paths(
@@ -124,7 +134,7 @@ def detect_tlc_spec_driven(
             "mode": "optional",
             "skill": "tlc-spec-driven",
             "paths": [str(path) for path in paths],
-            "usage": "Sob demanda para .specs estruturado, mapeamento brownfield, requisitos rastreaveis, quick tasks e retomada de trabalho.",
+            "usage": "Sob demanda para docs estruturado, mapeamento brownfield, requisitos rastreaveis, quick tasks e retomada de trabalho.",
         }
     return {
         "status": "pending",
@@ -321,11 +331,17 @@ def detect_dependencies(
     skill_search_roots: Sequence[Path] | None = None,
     source_sync: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    sources_extracted: dict[str, Any] = {}
+    if source_sync:
+        if "sources" in source_sync:
+            sources_extracted = dict(source_sync["sources"])
+        else:
+            sources_extracted = dict(source_sync)
     return {
         "superpowers": detect_superpowers(search_roots=skill_search_roots),
         "tlc": detect_tlc_spec_driven(search_roots=skill_search_roots),
         "atlassian": detect_atlassian(env),
-        "skillSources": dict(source_sync or {}),
+        "skillSources": sources_extracted,
     }
 
 
@@ -420,7 +436,7 @@ def render_conventions() -> str:
 ## Trabalho Com Codex
 
 - Responder em portugues do Brasil por padrao.
-- Ler `AGENTS.md` e `.agents/main-agent.md` no inicio de cada trabalho.
+- Ler `vervit-assistant/AGENTS.md` e `vervit-assistant/agent-profile.md` no inicio de cada trabalho.
 - Preservar trabalho local do usuario.
 - Nao fazer commit, push, deploy ou migracao remota sem pedido explicito.
 
@@ -506,7 +522,6 @@ def render_onboarding_state(
                 "mapCodebase",
                 "startFeature",
                 "startBugOrHotfix",
-                "prepareRelease",
             ],
         },
         "workflows": {
@@ -516,10 +531,131 @@ def render_onboarding_state(
             "main": "vervit-assistant-main coordena Jira, PRD, checklist, implementacao e entrega",
             "hotfix": "main -> hotfix/KEY-slug -> main -> tag patch -> sincronizar release",
             "plannedRelease": "release recebe tarefas; regressao geral; release -> main -> tag -> sincronizar release",
-            "tlcOptional": "TLC Spec-Driven sob demanda para Specify/Design/Tasks/Execute, mapeamento brownfield, quick tasks e continuidade de trabalho.",
+            "tlcOptional": "TLC Spec-Driven sob demanda para docs estruturado, mapeamento brownfield, quick tasks e continuidade de trabalho.",
         },
     }
     return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _symlink_skills(
+    skills_dir: Path, codex_skills_dir: Path
+) -> dict[str, str]:
+    result: dict[str, str] = {}
+    if not skills_dir.exists():
+        return result
+    codex_skills_dir.mkdir(parents=True, exist_ok=True)
+    for entry in skills_dir.iterdir():
+        if not entry.is_dir():
+            continue
+        link = codex_skills_dir / entry.name
+        if link.exists() and link.is_symlink():
+            link.unlink()
+        elif link.exists():
+            continue
+        try:
+            os.symlink(str(entry.resolve()), str(link),
+                       target_is_directory=True)
+            result[entry.name] = "linked"
+        except OSError:
+            try:
+                import subprocess
+                subprocess.run(
+                    ["cmd", "/c", "mklink", "/J", str(link), str(entry.resolve())],
+                    check=True, capture_output=True, text=True,
+                )
+                result[entry.name] = "linked"
+            except (OSError, subprocess.CalledProcessError):
+                result[entry.name] = "failed"
+    return result
+
+
+def install_local_skills(
+    target: Path,
+    sources: Mapping[str, str],
+    *,
+    codex_home: Path | None = None,
+) -> dict[str, Any]:
+    skills_dir = target.resolve() / "vervit-assistant" / "skills"
+    skills_dir.mkdir(parents=True, exist_ok=True)
+
+    if codex_home is None:
+        codex_home = (
+            Path(os.environ["CODEX_HOME"])
+            if os.environ.get("CODEX_HOME")
+            else Path.home() / ".codex"
+        )
+
+    results: dict[str, Any] = {
+        "skills_dir": str(skills_dir),
+        "plugin_skills": {},
+        "sources": {},
+        "symlinks": {},
+    }
+
+    for plugin_skill in sorted(PLUGIN_ROOT.joinpath("skills").iterdir()):
+        if not plugin_skill.is_dir() or not (plugin_skill / "SKILL.md").exists():
+            continue
+        dest = skills_dir / plugin_skill.name
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(plugin_skill, dest)
+        results["plugin_skills"][plugin_skill.name] = "installed"
+
+    for name, source in sources.items():
+        source_dir = skills_dir / "sources" / name
+        result: dict[str, Any] = {
+            "source": sanitize_source(source),
+            "path": str(source_dir),
+        }
+        try:
+            if not source_dir.exists():
+                run_git(["clone", source, str(source_dir)])
+                result.update(status="ok", action="cloned")
+            elif not (source_dir / ".git").exists():
+                result["status"] = "blocked"
+                result["action"] = "none"
+                result["reason"] = "not_git_checkout"
+                results["sources"][name] = result
+                continue
+            elif run_git(["status", "--porcelain"], cwd=source_dir):
+                result.update(status="blocked", action="none", reason="dirty_checkout")
+                results["sources"][name] = result
+                continue
+            else:
+                origin = run_git(["remote", "get-url", "origin"], cwd=source_dir)
+                result["origin"] = origin
+                if comparable_source(origin) != comparable_source(source):
+                    result.update(status="blocked", action="none", reason="origin_mismatch")
+                    results["sources"][name] = result
+                    continue
+                before = run_git(["rev-parse", "HEAD"], cwd=source_dir)
+                run_git(["pull", "--ff-only"], cwd=source_dir)
+                after = run_git(["rev-parse", "HEAD"], cwd=source_dir)
+                result.update(
+                    status="ok",
+                    action="updated" if before != after else "unchanged",
+                )
+            result["commit"] = run_git(["rev-parse", "HEAD"], cwd=source_dir)
+            installed, blocked = publish_skills(
+                source_dir,
+                codex_home=skills_dir,
+                source_name=name,
+                source=source,
+            )
+            result["installedSkills"] = installed
+            result["blockedSkills"] = blocked
+        except (OSError, subprocess.CalledProcessError) as exc:
+            result.update(
+                status="failed",
+                action="none",
+                error=str(exc).replace(source, sanitize_source(source)),
+            )
+        results["sources"][name] = result
+
+    codex_skills_dir = codex_home / "skills"
+    results["symlinks"] = _symlink_skills(skills_dir, codex_skills_dir)
+
+    return results
 
 
 def initialize_project(
@@ -536,16 +672,23 @@ def initialize_project(
     detected = detect_project(target)
     effective_env = load_vervit_env(target, env)
     sources = {**DEFAULT_SKILL_SOURCES, **dict(skill_sources or {})}
-    source_sync = (
-        sync_skill_sources(sources, codex_home=codex_home) if install_skills else {}
-    )
-    effective_roots = skill_search_roots
-    if effective_roots is None and codex_home is not None:
-        effective_roots = [
+
+    local_skills_root = target / "vervit-assistant" / "skills"
+    source_sync: dict[str, Any] = {}
+    if install_skills:
+        source_sync = install_local_skills(target, sources, codex_home=codex_home)
+        source_sync["installation"] = "local"
+
+    effective_roots = list(skill_search_roots) if skill_search_roots is not None else []
+    if codex_home is not None:
+        effective_roots.extend([
             codex_home / "skills",
             codex_home / "plugins" / "cache",
-            PLUGIN_ROOT / "skills",
-        ]
+        ])
+    effective_roots.extend([
+        local_skills_root,
+        PLUGIN_ROOT / "skills",
+    ])
     dependencies = detect_dependencies(
         env=effective_env,
         skill_search_roots=effective_roots,
@@ -560,36 +703,29 @@ def initialize_project(
     )
 
     static_templates = {
-        "AGENTS.md": "AGENTS.md",
-        ".agents/main-agent.md": ".agents/main-agent.md",
-        ".agents/vervit-assistant.json": ".agents/vervit-assistant.json",
+        "vervit-assistant/AGENTS.md": "AGENTS.md",
+        "vervit-assistant/config.json": "config.json",
+        "vervit-assistant/agent-profile.md": "agent-profile.md",
+        "docs/README.md": "docs/README.md",
         ".env.vervit.example": ".env.vervit.example",
-        ".specs/project/PROJECT.md": ".specs/project/PROJECT.md",
-        ".specs/project/ROADMAP.md": ".specs/project/ROADMAP.md",
-        ".specs/project/STATE.md": ".specs/project/STATE.md",
-        ".specs/releases/NEXT/RELEASE.md": ".specs/releases/NEXT/RELEASE.md",
-        ".specs/releases/NEXT/TRACE.md": ".specs/releases/NEXT/TRACE.md",
-        ".specs/releases/NEXT/state.json": ".specs/releases/NEXT/state.json",
-        ".specs/jira/README.md": ".specs/jira/README.md",
-        ".specs/releases/README.md": ".specs/releases/README.md",
     }
     for destination, template in static_templates.items():
         files[destination] = safe_write(target / destination, read_template(template), force=force)
 
     generated = {
-        ".specs/codebase/STACK.md": render_stack(detected),
-        ".specs/codebase/ARCHITECTURE.md": render_architecture(detected),
-        ".specs/codebase/CONVENTIONS.md": render_conventions(),
-        ".specs/codebase/STRUCTURE.md": render_structure(detected),
-        ".specs/codebase/TESTING.md": render_testing(detected),
-        ".specs/codebase/INTEGRATIONS.md": render_integrations(detected, dependencies),
-        ".specs/codebase/CONCERNS.md": render_concerns(),
+        "docs/_codebase/STACK.md": render_stack(detected),
+        "docs/_codebase/ARCHITECTURE.md": render_architecture(detected),
+        "docs/_codebase/CONVENTIONS.md": render_conventions(),
+        "docs/_codebase/STRUCTURE.md": render_structure(detected),
+        "docs/_codebase/TESTING.md": render_testing(detected),
+        "docs/_codebase/INTEGRATIONS.md": render_integrations(detected, dependencies),
+        "docs/_codebase/CONCERNS.md": render_concerns(),
     }
     for destination, content in generated.items():
         files[destination] = safe_write(target / destination, content, force=force)
 
-    files[".agents/vervit-onboarding.json"] = safe_write(
-        target / ".agents" / "vervit-onboarding.json",
+    files["vervit-assistant/state.json"] = safe_write(
+        target / "vervit-assistant" / "state.json",
         render_onboarding_state(detected, files, dependencies),
         force=True,
     )

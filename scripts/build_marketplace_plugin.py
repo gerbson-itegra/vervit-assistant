@@ -8,7 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / "plugins" / "vervit-assistant"
-PLUGIN_PATHS = (".codex-plugin", "assets", "scripts", "skills")
+PLUGIN_PATHS = (".codex-plugin", "assets", "scripts", "skills", "cli")
+PLUGIN_ROOT_FILES = ("pyproject.toml",)
 BUILD_ONLY_FILES = {"build_marketplace_plugin.py", "install_plugin.ps1"}
 
 
@@ -34,6 +35,11 @@ def build_marketplace_plugin() -> Path:
             DESTINATION / relative_path,
             ignore=ignore_generated,
         )
+
+    for root_file in PLUGIN_ROOT_FILES:
+        source = ROOT / root_file
+        if source.exists():
+            shutil.copy2(source, DESTINATION / root_file)
 
     return DESTINATION
 

@@ -3,7 +3,7 @@
 Responda em português do Brasil; preserve trabalho local.
 
 - Reuse contexto; leia arquivos da ação atual.
-- Leia `.agents/main-agent.md` para fluxo, memória ou entrega.
+- Leia `vervit-assistant/agent-profile.md` para fluxo, memória ou entrega.
 - Para Jira, use `vervit-assistant-main`, que carrega contexto sob demanda.
 - Siga padrões; faça mudanças.
 - Feature usa planejamento; bug, causa raiz; mudança comportamental, TDD.

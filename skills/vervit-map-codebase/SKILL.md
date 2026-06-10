@@ -7,7 +7,7 @@ metadata:
 
 # Vervit Map Codebase
 
-Atualize arquivos necessários em `.specs/codebase/`.
+Atualize arquivos necessários em `docs/_codebase/`.
 
 1. Reuse contexto; leia instruções locais somente se desconhecidas.
 2. Investigue por área, sem carregar o repositório inteiro.

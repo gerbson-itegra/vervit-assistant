@@ -16,7 +16,7 @@ WORD_LIMITS = {
     ROOT / "skills" / "vervit-init-project" / "SKILL.md": 160,
     ROOT / "skills" / "vervit-map-codebase" / "SKILL.md": 80,
     ROOT / "assets" / "templates" / "AGENTS.md": 90,
-    ROOT / "assets" / "templates" / ".agents" / "main-agent.md": 80,
+    ROOT / "assets" / "templates" / "agent-profile.md": 80,
     ROOT / "skills" / "vervit-assistant-main" / "references" / "task-workflow.md": 50,
     ROOT / "skills" / "vervit-assistant-main" / "references" / "jira-operations.md": 50,
     ROOT / "skills" / "vervit-assistant-main" / "references" / "provider-routing.md": 50,
@@ -49,8 +49,8 @@ class SkillInteractionContractTests(unittest.TestCase):
 
         self.assertIn("state.json", content)
         self.assertIn("sob demanda", content)
-        self.assertNotIn("leia `agents.md`, `.agents/main-agent.md`", content)
-        self.assertNotIn("abra `.specs/jira/<key>/prd.md`, `trace.md` e `state.json`", content)
+        self.assertNotIn("leia `agents.md`, `vervit-assistant/agent-profile.md`", content)
+        self.assertNotIn("abra `docs/<key>/prd.md`, `trace.md` e `state.json`", content)
 
     def test_security_gates_survive_compaction(self):
         content = "\n".join(

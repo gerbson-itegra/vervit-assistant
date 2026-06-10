@@ -19,6 +19,20 @@ def _write_new(path: Path, content: str) -> str:
     return "written"
 
 
+def _render_issue(issue_key: str, summary: str, task_type: str, track: str) -> str:
+    return json.dumps(
+        {
+            "issueKey": issue_key,
+            "summary": summary,
+            "type": task_type,
+            "track": track,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
 def _render_prd(issue_key: str, summary: str, task_type: str, track: str, branch: str) -> str:
     type_specific = {
         "bug": "## Evidencias E Causa Raiz",
@@ -68,6 +82,10 @@ def _render_trace(issue_key: str, branch: str) -> str:
 """
 
 
+def _flat_path(docs_dir: Path, issue_key: str, suffix: str) -> Path:
+    return docs_dir / f"{issue_key}{suffix}"
+
+
 def create_task_artifacts(
     root: Path,
     *,
@@ -77,15 +95,24 @@ def create_task_artifacts(
     track: str,
     branch: str,
 ) -> dict[str, str]:
-    task_dir = root.resolve() / ".specs" / "jira" / issue_key
+    docs_dir = root.resolve() / "docs"
     state = new_task_state(issue_key, task_type, track, branch)
     return {
-        "PRD.md": _write_new(
-            task_dir / "PRD.md", _render_prd(issue_key, summary, task_type, track, branch)
+        f"{issue_key}_issue.json": _write_new(
+            _flat_path(docs_dir, issue_key, "_issue.json"),
+            _render_issue(issue_key, summary, task_type, track),
         ),
-        "TRACE.md": _write_new(task_dir / "TRACE.md", _render_trace(issue_key, branch)),
-        "state.json": _write_new(
-            task_dir / "state.json", json.dumps(state, ensure_ascii=False, indent=2)
+        f"{issue_key}_PRD.md": _write_new(
+            _flat_path(docs_dir, issue_key, "_PRD.md"),
+            _render_prd(issue_key, summary, task_type, track, branch),
+        ),
+        f"{issue_key}_TRACE.md": _write_new(
+            _flat_path(docs_dir, issue_key, "_TRACE.md"),
+            _render_trace(issue_key, branch),
+        ),
+        f"{issue_key}_state.json": _write_new(
+            _flat_path(docs_dir, issue_key, "_state.json"),
+            json.dumps(state, ensure_ascii=False, indent=2),
         ),
     }
 

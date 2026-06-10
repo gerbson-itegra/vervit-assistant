@@ -18,14 +18,14 @@ class TaskArtifactsTests(unittest.TestCase):
                 track="planned",
                 branch="feature/ABC-123-adicionar-login-social",
             )
-            prd = root / ".specs" / "jira" / "ABC-123" / "PRD.md"
+            prd = root / "docs" / "ABC-123_PRD.md"
             state = json.loads(
-                (root / ".specs" / "jira" / "ABC-123" / "state.json").read_text(
+                (root / "docs" / "ABC-123_state.json").read_text(
                     encoding="utf-8"
                 )
             )
 
-            self.assertEqual(results["PRD.md"], "written")
+            self.assertEqual(results["ABC-123_PRD.md"], "written")
             self.assertIn("Cenarios De Validacao Manual", prd.read_text(encoding="utf-8"))
             prd_content = prd.read_text(encoding="utf-8")
             self.assertLessEqual(len(prd_content.split()), 100)
@@ -40,7 +40,7 @@ class TaskArtifactsTests(unittest.TestCase):
                 track="planned",
                 branch="feature/ABC-123-adicionar-login-social",
             )
-            self.assertEqual(second["PRD.md"], "unchanged")
+            self.assertEqual(second["ABC-123_PRD.md"], "unchanged")
             self.assertEqual(prd.read_text(encoding="utf-8"), "conteudo aprovado\n")
 
 
