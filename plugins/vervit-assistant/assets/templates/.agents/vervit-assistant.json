@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "jira": {
+    "projectKey": "PROJ",
+    "baseUrlEnv": "JIRA_BASE_URL",
+    "emailEnv": "JIRA_EMAIL",
+    "apiTokenEnv": "JIRA_API_TOKEN"
+  },
+  "git": {
+    "mainBranch": "main",
+    "releaseBranch": "release"
+  },
+  "providers": []
+}

@@ -27,6 +27,9 @@ class TaskArtifactsTests(unittest.TestCase):
 
             self.assertEqual(results["PRD.md"], "written")
             self.assertIn("Cenarios De Validacao Manual", prd.read_text(encoding="utf-8"))
+            prd_content = prd.read_text(encoding="utf-8")
+            self.assertLessEqual(len(prd_content.split()), 100)
+            self.assertNotIn("Perguntas Abertas", prd_content)
             self.assertEqual(state["track"], "planned")
             prd.write_text("conteudo aprovado\n", encoding="utf-8")
             second = create_task_artifacts(

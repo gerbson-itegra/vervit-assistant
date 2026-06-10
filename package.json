@@ -1,0 +1,26 @@
+{
+  "name": "@vervit/assistant-installer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private npx installer for the Vervit Assistant Codex plugin.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "bin": {
+    "vervit-assistant-install": "./bin/install.mjs"
+  },
+  "files": [
+    ".agents/plugins/marketplace.json",
+    "bin/install.mjs",
+    "plugins/vervit-assistant"
+  ],
+  "scripts": {
+    "test": "node --test tests/install-cli.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gerbson-itegra/vervit-assistant.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

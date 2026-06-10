@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 from scripts.jira_executor import (
     JiraExecutor,
@@ -75,6 +77,19 @@ class JiraChecklistTests(unittest.TestCase):
 
 
 class JiraExecutorTests(unittest.TestCase):
+    def test_from_env_loads_project_local_vervit_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".env.vervit.local").write_text(
+                "JIRA_BASE_URL=https://example.atlassian.net\n"
+                "JIRA_EMAIL=user@example.com\n"
+                "JIRA_API_TOKEN=secret\n",
+                encoding="utf-8",
+            )
+
+            executor = JiraExecutor.from_env(root=root, env={})
+
+            self.assertEqual(executor.base_url, "https://example.atlassian.net")
     def setUp(self):
         self.transport = FakeTransport()
         self.executor = JiraExecutor(
