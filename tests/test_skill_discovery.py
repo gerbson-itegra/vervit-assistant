@@ -10,6 +10,7 @@ SKILL_DISPLAY_NAMES = {
     "vervit-map-codebase": "Vervit: Mapear Codebase",
     "vervit-especificar-tarefa": "Vervit: Especificar Tarefa",
     "vervit-implementar-tarefa": "Vervit: Implementar Tarefa",
+    "vervit-update": "Vervit: Atualizar Plugin",
 }
 
 

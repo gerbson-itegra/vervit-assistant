@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vervit: Atualizar Plugin"
+  short_description: "Atualizar Vervit Assistant e sincronizar skills"
+interface_category: productivity

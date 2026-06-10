@@ -8,6 +8,7 @@ SKILLS = [
     ROOT / "skills" / "vervit-especificar-tarefa" / "SKILL.md",
     ROOT / "skills" / "vervit-implementar-tarefa" / "SKILL.md",
     ROOT / "skills" / "vervit-init-project" / "SKILL.md",
+    ROOT / "skills" / "vervit-update" / "SKILL.md",
 ]
 WORD_LIMITS = {
     ROOT / "skills" / "vervit-assistant-main" / "SKILL.md": 145,
@@ -15,6 +16,7 @@ WORD_LIMITS = {
     ROOT / "skills" / "vervit-implementar-tarefa" / "SKILL.md": 110,
     ROOT / "skills" / "vervit-init-project" / "SKILL.md": 160,
     ROOT / "skills" / "vervit-map-codebase" / "SKILL.md": 80,
+    ROOT / "skills" / "vervit-update" / "SKILL.md": 80,
     ROOT / "assets" / "templates" / "AGENTS.md": 90,
     ROOT / "assets" / "templates" / "agent-profile.md": 80,
     ROOT / "skills" / "vervit-assistant-main" / "references" / "task-workflow.md": 50,

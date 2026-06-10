@@ -17,7 +17,7 @@ Apresente ações: configurar/listar Jira, mapear projeto, iniciar tarefa ou pre
 2. Rode `python C:\Vervit\vervit-assistant\scripts\init_project.py --target <projeto>`.
 3. Revise saídas e `vervit-assistant/state.json`.
 4. Verifique Rovo se exposto; Jira ausente não bloqueia.
-5. Use `--install-skills` para instalar skills localmente em `vervit-assistant/skills/` com symlinks em `.codex/skills/`.
+5. Para migrar estrutura antiga e baixar/atualizar skills, use `vervit update --target <projeto>`.
 
 ## Regras
 
