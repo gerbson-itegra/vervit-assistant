@@ -6,8 +6,9 @@ metadata:
 ---
 
 ## Fluxo
-1. `cd C:\Vervit\vervit-assistant && git pull`
-2. `set PYTHONPATH=C:\Vervit\vervit-assistant && python -m cli update --target <projeto>`
+1. `cd <plugin> && git pull`
+2. Se `vervit` não estiver no PATH, rode `python <plugin>/scripts/install_cli.py`.
+3. `python -m cli update --target <projeto>`
 3. Informe o que mudou
 
 ## Regras
