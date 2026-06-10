@@ -7,7 +7,8 @@
   },
   "skills": "./skills/",
   "interface": {
-    "icon": "./assets/vervit-logo.png",
+    "composerIcon": "./assets/vervit-logo.png",
+    "logo": "./assets/vervit-logo.png",
     "displayName": "Vervit Assistant",
     "shortDescription": "Develop Jira tasks with guarded releases.",
     "longDescription": "Vervit Assistant orchestrates Jira task selection, adaptive PRDs, Superpowers/TDD implementation, manual validation checklists, deterministic Jira REST operations, multi-provider routing for trivial text work, hotfixes, planned releases, SemVer, tags, regression gates, and traceable project memory.",
