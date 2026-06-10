@@ -1,6 +1,6 @@
 {
   "name": "vervit-assistant",
-  "version": "0.1.0+codex.20260610015929",
+  "version": "0.1.0+codex.20260610095806",
   "description": "Jira-driven development, adaptive Superpowers/TDD, deterministic Jira operations, multi-provider routing, and guarded SemVer releases.",
   "author": {
     "name": "Vervit"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Vervit: Inicializar Projeto"
+  short_description: "Configurar o padrao Vervit em um projeto"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Vervit: Implementar Tarefa"
+  short_description: "Implementar uma tarefa Vervit especificada"

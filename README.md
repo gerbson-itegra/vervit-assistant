@@ -49,6 +49,17 @@ Para trabalhar em uma atividade:
 Use o Vervit Assistant para listar minhas atividades Jira e iniciar uma tarefa
 ```
 
+No Codex app, digite `/vervit` no composer para filtrar as skills instaladas:
+
+- `Vervit: Assistente Principal`
+- `Vervit: Inicializar Projeto`
+- `Vervit: Mapear Codebase`
+- `Vervit: Especificar Tarefa`
+- `Vervit: Implementar Tarefa`
+
+As skills sao instaladas e atualizadas junto com o plugin. Abra uma nova thread
+depois de instalar ou atualizar para carregar a lista mais recente.
+
 ## Instalacao Para O Time
 
 O repositorio e privado e tambem funciona como marketplace Codex de equipe.
