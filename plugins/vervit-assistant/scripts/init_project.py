@@ -64,7 +64,7 @@ def ensure_gitignore_entry(path: Path, entry: str) -> str:
 def default_skill_search_roots(
     env: Mapping[str, str] | None = None,
     *,
-    project_skills_root: Path | None = None,
+    project_assistant_root: Path | None = None,
 ) -> list[Path]:
     env = os.environ if env is None else env
     codex_home = Path(env["CODEX_HOME"]) if env.get("CODEX_HOME") else Path.home() / ".codex"
@@ -73,8 +73,9 @@ def default_skill_search_roots(
         codex_home / "plugins" / "cache",
         PLUGIN_ROOT / "skills",
     ]
-    if project_skills_root is not None:
-        roots.insert(0, project_skills_root)
+    if project_assistant_root is not None:
+        roots.insert(0, project_assistant_root / "vervit")
+        roots.insert(0, project_assistant_root / "superpowers")
     return roots
 
 
@@ -100,6 +101,8 @@ def find_skill_paths(
         candidates.extend(resolved.glob(f"*/*/skills/{skill_name}/SKILL.md"))
         candidates.extend(resolved.glob(f"*/*/*/skills/{skill_name}/SKILL.md"))
         candidates.extend(resolved.glob(f"*/references/{skill_name}/SKILL.md"))
+        candidates.extend(resolved.glob(f"*/vervit/{skill_name}/SKILL.md"))
+        candidates.extend(resolved.glob(f"*/superpowers/{skill_name}/SKILL.md"))
         for candidate in candidates:
             if candidate.exists():
                 candidate = candidate.resolve()
@@ -218,14 +221,17 @@ def sanitize_source(source: str) -> str:
 
 
 def publish_skills(
-    checkout: Path, *, codex_home: Path, source_name: str, source: str
+    checkout: Path, *, codex_home: Path | None = None,
+    destination_root: Path | None = None,
+    source_name: str, source: str
 ) -> tuple[list[str], list[str]]:
     skills_root = checkout / "skills"
     if not skills_root.exists():
         skills_root = checkout
     installed: list[str] = []
     blocked: list[str] = []
-    destination_root = codex_home / "skills"
+    if destination_root is None:
+        destination_root = Path(codex_home) / "skills"  # type: ignore[arg-type]
     destination_root.mkdir(parents=True, exist_ok=True)
     for skill_path in sorted(skills_root.iterdir()):
         if not skill_path.is_dir() or not (skill_path / "SKILL.md").exists():
@@ -575,8 +581,11 @@ def install_local_skills(
     *,
     codex_home: Path | None = None,
 ) -> dict[str, Any]:
-    skills_dir = target.resolve() / "vervit-assistant" / "skills"
-    skills_dir.mkdir(parents=True, exist_ok=True)
+    assistant_dir = target.resolve() / "vervit-assistant"
+    vervit_dir = assistant_dir / "vervit"
+    superpowers_dir = assistant_dir / "superpowers"
+    vervit_dir.mkdir(parents=True, exist_ok=True)
+    superpowers_dir.mkdir(parents=True, exist_ok=True)
 
     if codex_home is None:
         codex_home = (
@@ -586,7 +595,7 @@ def install_local_skills(
         )
 
     results: dict[str, Any] = {
-        "skills_dir": str(skills_dir),
+        "assistant_dir": str(assistant_dir),
         "plugin_skills": {},
         "sources": {},
         "symlinks": {},
@@ -595,14 +604,14 @@ def install_local_skills(
     for plugin_skill in sorted(PLUGIN_ROOT.joinpath("skills").iterdir()):
         if not plugin_skill.is_dir() or not (plugin_skill / "SKILL.md").exists():
             continue
-        dest = skills_dir / plugin_skill.name
+        dest = vervit_dir / plugin_skill.name
         if dest.exists():
             shutil.rmtree(dest)
         shutil.copytree(plugin_skill, dest)
         results["plugin_skills"][plugin_skill.name] = "installed"
 
     for name, source in sources.items():
-        source_dir = skills_dir / "sources" / name
+        source_dir = assistant_dir / "sources" / name
         result: dict[str, Any] = {
             "source": sanitize_source(source),
             "path": str(source_dir),
@@ -638,7 +647,7 @@ def install_local_skills(
             result["commit"] = run_git(["rev-parse", "HEAD"], cwd=source_dir)
             installed, blocked = publish_skills(
                 source_dir,
-                codex_home=skills_dir,
+                destination_root=superpowers_dir,
                 source_name=name,
                 source=source,
             )
@@ -653,7 +662,10 @@ def install_local_skills(
         results["sources"][name] = result
 
     codex_skills_dir = codex_home / "skills"
-    results["symlinks"] = _symlink_skills(skills_dir, codex_skills_dir)
+    symlinks: dict[str, str] = {}
+    for skills_root in (vervit_dir, superpowers_dir):
+        symlinks.update(_symlink_skills(skills_root, codex_skills_dir))
+    results["symlinks"] = symlinks
 
     return results
 
@@ -673,7 +685,7 @@ def initialize_project(
     effective_env = load_vervit_env(target, env)
     sources = {**DEFAULT_SKILL_SOURCES, **dict(skill_sources or {})}
 
-    local_skills_root = target / "vervit-assistant" / "skills"
+    assistant_root = target / "vervit-assistant"
     source_sync: dict[str, Any] = {}
     if install_skills:
         source_sync = install_local_skills(target, sources, codex_home=codex_home)
@@ -686,7 +698,8 @@ def initialize_project(
             codex_home / "plugins" / "cache",
         ])
     effective_roots.extend([
-        local_skills_root,
+        assistant_root / "vervit",
+        assistant_root / "superpowers",
         PLUGIN_ROOT / "skills",
     ])
     dependencies = detect_dependencies(
