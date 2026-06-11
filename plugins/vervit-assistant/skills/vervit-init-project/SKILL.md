@@ -14,7 +14,7 @@ Apresente ações: configurar/listar Jira, mapear projeto, iniciar tarefa ou pre
 ## Fluxo
 
 1. Leia instruções locais apenas se afetarem a ação.
-2. Se `vervit` não estiver no PATH, rode `python <plugin>/scripts/install_cli.py` (pip install -e).
+2. Se `vervit` não estiver no PATH, instale automaticamente: `python <plugin>/scripts/install_cli.py`.
 3. Rode `vervit init --target <projeto>` (migração + artefatos + skills).
 4. Revise saídas e `vervit-assistant/state.json`.
 
