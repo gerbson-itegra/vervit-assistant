@@ -587,6 +587,18 @@ def install_local_skills(
     vervit_dir.mkdir(parents=True, exist_ok=True)
     superpowers_dir.mkdir(parents=True, exist_ok=True)
 
+    old_skills_dir = assistant_dir / "skills"
+    if old_skills_dir.exists():
+        for i in range(3):
+            try:
+                shutil.rmtree(old_skills_dir)
+                break
+            except PermissionError:
+                import time
+                time.sleep(1)
+        if old_skills_dir.exists():
+            shutil.rmtree(old_skills_dir, ignore_errors=True)
+
     if codex_home is None:
         codex_home = (
             Path(os.environ["CODEX_HOME"])
