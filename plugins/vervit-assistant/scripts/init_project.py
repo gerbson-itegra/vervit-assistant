@@ -18,6 +18,22 @@ except ImportError:
     from vervit_env import load_vervit_env
 
 
+def _ensure_real_directory(path: Path) -> None:
+    """Ensure *path* is a real directory, not a broken junction."""
+    if not path.exists():
+        path.mkdir(parents=True, exist_ok=True)
+        return
+    try:
+        # probe whether we can actually write into it
+        probe = path / ".probe"
+        probe.touch()
+        probe.unlink()
+    except (OSError, PermissionError):
+        # broken junction or inaccessible – remove and recreate
+        shutil.rmtree(path, ignore_errors=True)
+        path.mkdir(parents=True, exist_ok=True)
+
+
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_ROOT = PLUGIN_ROOT / "assets" / "templates"
 SUPERPOWERS_REQUIRED_SKILLS = [
@@ -278,7 +294,7 @@ def sync_skill_sources(
         else codex_home or Path.home() / ".codex"
     )
     destination_root = Path(codex_home) / "skills" / "sources"
-    destination_root.mkdir(parents=True, exist_ok=True)
+    _ensure_real_directory(destination_root)
     results: dict[str, dict[str, Any]] = {}
     for name, source in sources.items():
         destination = destination_root / name
@@ -606,6 +622,9 @@ def install_local_skills(
             else Path.home() / ".codex"
         )
 
+    global_sources_root = codex_home / "skills" / "sources"
+    _ensure_real_directory(global_sources_root)
+
     results: dict[str, Any] = {
         "assistant_dir": str(assistant_dir),
         "plugin_skills": {},
@@ -622,8 +641,13 @@ def install_local_skills(
         shutil.copytree(plugin_skill, dest)
         results["plugin_skills"][plugin_skill.name] = "installed"
 
+    # Remove project-local sources dir (migrated to global)
+    local_sources = assistant_dir / "sources"
+    if local_sources.exists():
+        shutil.rmtree(local_sources, ignore_errors=True)
+
     for name, source in sources.items():
-        source_dir = assistant_dir / "sources" / name
+        source_dir = global_sources_root / name
         result: dict[str, Any] = {
             "source": sanitize_source(source),
             "path": str(source_dir),
