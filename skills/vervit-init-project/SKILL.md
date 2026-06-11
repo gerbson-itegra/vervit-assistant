@@ -14,10 +14,9 @@ Apresente ações: configurar/listar Jira, mapear projeto, iniciar tarefa ou pre
 ## Fluxo
 
 1. Leia instruções locais apenas se afetarem a ação.
-2. Este skill está em `<plugin>/skills/vervit-init-project/SKILL.md`. Calcule `<plugin>` = 2 níveis acima.
-3. Se `vervit` não estiver no PATH, rode `python <plugin>/scripts/install_cli.py` (instala via pip install -e).
-4. Rode `vervit init --target <projeto>` (migração + artefatos + skills).
-5. Revise saídas e `vervit-assistant/state.json`.
+2. Se `vervit` não estiver no PATH, rode `python <plugin>/scripts/install_cli.py` (pip install -e).
+3. Rode `vervit init --target <projeto>` (migração + artefatos + skills).
+4. Revise saídas e `vervit-assistant/state.json`.
 
 ## Regras
 
